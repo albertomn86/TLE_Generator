@@ -1,52 +1,47 @@
 __author__ = "Alberto MN"
-__version__ = "1.0"
+__version__ = "2.0"
 
 import argparse
 import urllib.request
 import logging
 import os
+import re
 
-tracked_list = {
-    'METEOR-M 1',
-    'METEOR-M 2',
-    'METEOR-M2 2',
-    'NOAA 15',
-    'NOAA 18',
-    'NOAA 19',
-    'ISS (ZARYA)',
-    'FUNCUBE-1 (AO-73)',
-    'RADFXSAT (FOX-1B)',
-    'FOX-1CLIFF (AO-95)',
-    'FOX-1D (AO-92)',
-    'NAYIF-1 (EO-88)',
-    'JY1SAT (JO-97)'
-}
+tracked_list = [
+    ['40069', 'METEOR-M 2'],
+    ['44387', 'METEOR-M2 2'],
+    ['25338', 'NOAA 15'],
+    ['28654', 'NOAA 18'],
+    ['33591', 'NOAA 19'],
+    ['25544', 'ISS (ZARYA)'],
+    ['39444', 'FUNCUBE-1 (AO-73)'],
+    ['43017', 'RADFXSAT (FOX-1B)'],
+    ['43770', 'FOX-1CLIFF (AO-95)'],
+    ['43137', 'FOX-1D (AO-92)'],
+    ['42017', 'NAYIF-1 (EO-88)'],
+    ['43803', 'JY1SAT (JO-97)'],
+    ['43780', 'MOVE-II'],
+    ['42778', 'MAX VALIER SAT'],
+    ['43937', 'NEXUS (FO-99)']
+]
 
-elements_files = ['weather.txt', 'amateur.txt']
-
-norad_url = 'https://www.celestrak.com/NORAD/elements/'
+_norad_url = 'http://www.amsat.celestrak.net/satcat/tle.php?CATNR='
 
 
-def download_elements(elem_file):
+def download_tle(elem):
     data = []
-    url = norad_url + elem_file
+    url = _norad_url + elem[0]
     try:
-        data = urllib.request.urlopen(url)
+        html = urllib.request.urlopen(url).read()
+        body = re.search(br'<pre>(.*)</pre>', html, re.DOTALL)
+        if body:
+            raw = body.group(1).split(b'\r\n')
+            filtered = [x for x in raw if x.strip()]
+            if elem[1] in filtered[0].decode():
+                data = filtered
     except urllib.error.URLError as e_url:
         logging.error(e_url.reason)
     return data
-
-
-def parse_elements(elements_list, output_file):
-    for line in elements_list:
-        if not line.startswith(b'1') and not line.startswith(b'2'):
-            current = line.decode('ascii').strip()
-            if current in tracked_list:
-                logging.info('Writting TLE for {0}.'.format(current))
-                output_file.write(line)
-                output_file.write(next(elements_list))
-                output_file.write(next(elements_list))
-                tracked_list.remove(current)
 
 
 if __name__== "__main__":
@@ -63,16 +58,17 @@ if __name__== "__main__":
     if args['output']:
         out_file = args['output']
     if args['list']:
-        print('Tracked satellites:\n{0}'.format('\n'.join(tracked_list)))
+        print('Tracked satellites:\n{0}'.format('\n'.join(x[1] for x in tracked_list)))
         exit(0)
 
     with open(out_file, 'wb') as output:
-        for elem in elements_files:
-            data = download_elements(elem)
-            parse_elements(data, output)
-
-
-    if len(tracked_list):
-        logging.warning('Could not get TLE for the following satellites: {0}'.format(', '.join(tracked_list)))
+        for elem in tracked_list:
+            data = download_tle(elem)
+            if not len(data) == 3:
+                logging.warning('Could not get TLE for: {0}'.format(elem[1]))
+                continue
+            for line in data:
+                output.write(line + b'\r\n')
+            logging.info('Saved TLE for {0}.'.format(elem[1]))
 
     logging.info('Custom TLE file saved in \"{0}\".'.format(os.path.abspath(out_file)))
