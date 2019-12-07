@@ -1,5 +1,5 @@
 __author__ = "Alberto MN"
-__version__ = "2.0"
+__version__ = "2.1"
 
 import argparse
 import urllib.request
@@ -32,10 +32,9 @@ def download_tle(elem):
     data = []
     url = _norad_url + elem[0]
     try:
-        html = urllib.request.urlopen(url).read()
-        body = re.search(br'<pre>(.*)</pre>', html, re.DOTALL)
+        body = urllib.request.urlopen(url).read()
         if body:
-            raw = body.group(1).split(b'\r\n')
+            raw = body.split(b'\r\n')
             filtered = [x for x in raw if x.strip()]
             if elem[1] in filtered[0].decode():
                 data = filtered
@@ -72,3 +71,5 @@ if __name__== "__main__":
             logging.info('Saved TLE for {0}.'.format(elem[1]))
 
     logging.info('Custom TLE file saved in \"{0}\".'.format(os.path.abspath(out_file)))
+    
+    input("Press Enter to exit...")
