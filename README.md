@@ -4,7 +4,7 @@ Custom TLE file generator.
 
 ## Usage:
 
-`tle_gen [-h] [-o OUTPUT] [-v] [-l]`
+`tle_gen [-h] [-i INPUT] [-o OUTPUT] [-v]`
 
 ## Optional arguments:
 
