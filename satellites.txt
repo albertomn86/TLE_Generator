@@ -1,0 +1,18 @@
+# Tracked satellites list.
+
+# This list contains the NORAD catalog number for the tracked satellites.
+# Get more catalog numbers at https://www.celestrak.com/satcat/search.php
+
+40069   # Meteor-M N2
+44387   # Meteor-M N2-2
+25338   # NOAA 15
+28654   # NOAA 18
+33591   # NOAA 19
+25544   # ISS
+39444   # Funcube-1 (AO-73)
+43017   # RADFXSAT (FOX-1B)
+43770   # FOX-1CLIFF (AO-95)
+43137   # FOX-1D (AO-92)
+42017   # NAYIF-1 (EO-88)
+43803   # JY1SAT (JO-97)
+44829   # FossaSat-1
