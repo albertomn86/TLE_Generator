@@ -35,7 +35,7 @@ Generate TLE file with the NORAD catalog numbers included in the file `satellite
 2020-02-04 10:57:52,706 - INFO: Saved TLE for JY1SAT (JO-97).
 2020-02-04 10:57:52,978 - INFO: Saved TLE for FOSSASAT-1.
 2020-02-04 10:57:53,297 - INFO: Saved TLE for HUSKYSAT-1.
-2020-01-22 19:28:37,777 - INFO: Custom TLE file saved in "custom_TLE.txt".
+2020-02-04 10:57:53,298 - INFO: Custom TLE file saved in "custom_TLE.txt".
 ```
 
 Generate TLE file in `/tmp/noaa.txt` with the NORAD catalog numbers `25338`, `28654`, and `33591`:
