@@ -16,4 +16,4 @@
 42017   # NAYIF-1 (EO-88)
 43803   # JY1SAT (JO-97)
 44829   # FossaSat-1
-45117   # HuskySat-1 (HS-1)
+45119   # HuskySat-1 (HS-1)
