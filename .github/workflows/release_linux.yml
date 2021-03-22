@@ -10,8 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Python
       uses: actions/setup-python@v2
       with:
         python-version: 3.9
@@ -26,4 +27,6 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: TLE_Generator.linux
-        path: dist/tle_gen
+        path: |
+          dist/tle_gen
+          satellites.txt

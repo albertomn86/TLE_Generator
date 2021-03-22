@@ -8,9 +8,6 @@ on:
 jobs:
   release:
     runs-on: windows-latest
-    strategy:
-      matrix:
-        arch: [x64, x86]
 
     steps:
     - name: Checkout
@@ -19,7 +16,7 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.9
-        architecture: ${{ matrix.arch }}
+        architecture: x86
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools
@@ -30,5 +27,7 @@ jobs:
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: TLE_Generator.${{ matrix.arch }}
-        path: dist/tle_gen.exe
+        name: TLE_Generator.windows
+        path: |
+          dist/tle_gen.exe
+          satellites.txt
