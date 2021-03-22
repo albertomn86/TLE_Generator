@@ -22,8 +22,8 @@ jobs:
     - name: Generate binary
       run: |
         pyinstaller --onefile -n tle_gen tle_gen.py
-    - name: Upload artifact
-      uses: actions/upload-artifact@v1
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2.2.2
       with:
-        name: tle_gen.macos
-        path: dist/TLE_Generator
+        name: TLE_Generator.macos
+        path: dist/tle_gen
