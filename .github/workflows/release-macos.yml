@@ -1,0 +1,30 @@
+name: MacOS Release
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  release:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools
+        pip install -r requirements.txt
+        pip install PyInstaller==4.2
+    - name: Generate binary
+      run: |
+        pyinstaller --onefile -n tle_gen tle_gen.py
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: tle_gen.macos
+        path: dist/TLE_Generator
