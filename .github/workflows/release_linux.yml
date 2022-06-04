@@ -19,7 +19,7 @@ jobs:
     - name: Install dependencies and pyinstall
       run: |
         python -m pip install --upgrade pip setuptools requests
-        pip install PyInstaller==4.2
+        pip install PyInstaller
     - name: Generate binary
       run: |
         pyinstaller --onefile -n tle_gen tle_gen.py
