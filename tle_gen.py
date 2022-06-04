@@ -1,41 +1,46 @@
 #!/usr/bin/env python3
 
 __author__ = "Alberto MN"
-__version__ = "2.3"
+__version__ = "2.4"
 
 from argparse import ArgumentParser
-from urllib.request import urlopen
+import requests
 from os import path
 from re import match
 import logging
 
-_norad_url = 'http://www.amsat.celestrak.net/satcat/tle.php?CATNR='
+NORAD_URL = 'https://celestrak.com/NORAD/elements/gp.php'
 
-def parseList(tracked_file):
-    sat_list = []
-    if not path.exists(tracked_file):
-        raise FileNotFoundError(f"File not found: {tracked_file}")
-    with open(tracked_file, 'r') as input:
+def read_satellites_file(file_path: str) -> list:
+    satellites = []
+    if not path.exists(file_path):
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    with open(file_path, 'r') as input:
         for line in input:
             if line.startswith('#'):
                 continue
             matched = match(r"([0-9]{5}).*",line)
             if matched:
-                logging.debug('Found number: {0}.'.format(matched.group(1)))
-                sat_list.append(matched.group(1))
-    return sat_list
+                catalog_number = matched.group(1)
+                logging.debug(f'Found catalog number: {catalog_number}.')
+                satellites.append(catalog_number)
+
+    return satellites
 
 
-def download_tle(elem):
+def download_tle(catalog_number: str) -> list:
     data = []
-    url = _norad_url + elem
-    try:
-        body = urlopen(url).read()
-        if body:
-            raw = body.split(b'\r\n')
-            data = [x for x in raw if x.strip()]
-    except urllib.error.URLError as e_url:
-        logging.error(e_url.reason)
+    url = f'{NORAD_URL}?CATNR={catalog_number}'
+
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        raw = response.content.split(b'\r\n')
+        data = [x for x in raw if x.strip()]
+    else:
+        logging.error(response.reason)
+
     return data
 
 
@@ -63,7 +68,7 @@ if __name__== "__main__":
         input_list = args['input'].replace(" ", "").split(',')
     else:
         try:
-            input_list = parseList(tr_file)
+            input_list = read_satellites_file(tr_file)
         except FileNotFoundError as err:
             logging.error(err)
             exit(1)
