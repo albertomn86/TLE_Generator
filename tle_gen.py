@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 
-__author__ = "Alberto MN"
-__version__ = "2.5"
+__author__ = 'Alberto MN'
+__version__ = '3.0'
 
 from argparse import ArgumentParser
 import requests
 from os import path
 from re import match
 import logging
+from lib.tle import Tle
 
 # Tracked satellites file
 TR_FILE = 'satellites.txt'
 
 # Output default file
 OUT_FILE = 'custom_TLE.txt'
+
+DEFAULT_GROUPS = ['weather', 'amateur']
 
 NORAD_URL = 'https://celestrak.com/NORAD/elements/gp.php'
 
@@ -36,10 +39,8 @@ def read_satellites_file(file_path: str) -> list:
     return satellites
 
 
-def download_tle(catalog_number: str) -> list:
+def download_data(url: str) -> list:
     data = []
-    url = f'{NORAD_URL}?CATNR={catalog_number}'
-
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -51,16 +52,54 @@ def download_tle(catalog_number: str) -> list:
     return data
 
 
-def save_to_file(input_list: str, out_file: str):
+def parse_raw_data(data: list) -> dict:
+    parsed_data = {}
+    i = 0
+
+    while i < len(data):
+        if len(data[i]) == 24:
+            title_line = data[i]
+            l1 = data[i + 1]
+            l2 = data[i + 2]
+            sat_id = l2.decode().split()[1]
+            parsed_data[sat_id] = Tle(title_line, l1, l2)
+            i += 3
+        else:
+            i += 1
+
+    return parsed_data
+
+
+def get_data_by_catalog_number(catalog_number: str) -> list:
+    url = f'{NORAD_URL}?CATNR={catalog_number}&FORMAT=TLE'
+
+    return download_data(url)
+
+
+def get_data_by_group(group_name: str) -> list:
+    url = f'{NORAD_URL}?GROUP={group_name}&FORMAT=TLE'
+
+    return download_data(url)
+
+
+def save_to_file(sat_data: dict, input_list: str, out_file: str):
     with open(out_file, 'wb') as output:
         for elem in input_list:
-            data = download_tle(elem)
-            if not len(data) == 3:
-                logging.warning('Could not get TLE for: {0}'.format(elem))
-                continue
-            for line in data:
+            tle_data = sat_data.get(elem)
+
+            if tle_data is None:
+                logging.debug('TLE for {0} not found in default groups data. Searching by catalog number...'.format(elem))
+                data = parse_raw_data(get_data_by_catalog_number(elem))
+                tle_data = data.get(elem)
+
+                if tle_data is None:
+                    logging.warning('Could not get TLE for: {0}'.format(elem))
+                    continue
+
+            for line in tle_data.getLines():
                 output.write(line + b'\r\n')
-            logging.info('Saved TLE for {0}.'.format((data[0].decode()).strip()))
+
+            logging.info('Saved TLE for {0}.'.format(tle_data.object_name))
 
     logging.info('Custom TLE file saved in \"{0}\".'.format(path.abspath(out_file)))
 
@@ -91,4 +130,10 @@ if __name__ == "__main__":
         logging.info('Invalid satellite list.')
         exit(1)
 
-    save_to_file(input_list, out_file)
+    default_sat_data = []
+    for group in DEFAULT_GROUPS:
+        default_sat_data += get_data_by_group(group)
+
+    sat_data = parse_raw_data(default_sat_data)
+
+    save_to_file(sat_data, input_list, out_file)
